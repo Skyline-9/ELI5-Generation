@@ -46,7 +46,7 @@ def crawl_page(subreddit: str, last_page=None):
     """
 
     url = "https://api.pushshift.io/reddit/search/submission"
-    params = {"subreddit": subreddit, "size": 2000, "sort": "desc", "sort_type": "score", "q": "coronavirus"}
+    params = {"subreddit": subreddit, "size": 2000, "sort": "desc", "sort_type": "score", "score": ">100"}
 
     if last_page is not None:
         if len(last_page) > 0:
@@ -63,6 +63,15 @@ def crawl_page(subreddit: str, last_page=None):
         raise Exception("Server returned status code {}".format(results.status_code))
 
     return results.json()["data"]
+
+
+def get_post_comments(link_id):
+
+    url = "https://api.pushshift.io/reddit/search/comment"
+    params = {"link_id": link_id, "nest_level": 1, "limit": 20000, "sort": "desc", "sort_type": "score", "gilded": ">1"}
+    results = requests.get(url, params)
+
+    return results.json()['data']
 
 
 def pretty_print_json(file_path):
@@ -87,7 +96,7 @@ def pretty_print_json(file_path):
 
 
 def main():
-    data = crawl_subreddit("explainlikeimfive")
+    data = crawl_subreddit("explainlikeimfive", 2)
     df = pd.DataFrame(data=data)
 
     # Display all rows when printing out
@@ -106,6 +115,19 @@ def main():
     pretty_print_json('Export_DataFrame.json')
 
     print(df)
+
+    # Fetch top level comments
+    for i in df['id']:
+        data = get_post_comments(i)
+        df2 = pd.DataFrame(data=data)
+
+        # Filter only for the columns we care about
+        df2 = df2.filter(['body', 'id', 'permalink'])
+
+        df2.to_json('Export_DataFrame' + i + '.json')
+        pretty_print_json('Export_DataFrame' + i + '.json')
+
+        print(df2)
 
 
 if __name__ == '__main__':
