@@ -11,7 +11,7 @@ def main():
     for submission in subreddit.top(limit=1):
         print(submission.title)
         print(submission.score)
-        print(submission.comments[0])
+        print(list(submission.comments)[1].body)
 
 
 if __name__ == '__main__':
