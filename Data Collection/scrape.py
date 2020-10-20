@@ -19,12 +19,12 @@ def main():
     df = pd.DataFrame(columns=['Title', 'Score', 'Answer'])
 
     i = 0
-    for submission in subreddit.top(limit=1):
+    for submission in subreddit.top(limit=3):
         df.loc[i] = [submission.title, submission.score, list(submission.comments)[1].body]
         i = i + 1
 
     # Save as json
-    df.to_json('eli5.json')
+    df.to_json(os.path.join('Data Collection', 'eli5.json'))
     print(df)
 
 
